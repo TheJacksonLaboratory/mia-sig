@@ -1,0 +1,63 @@
+#!/bin/bash 
+# Set parameters for the cluster
+#PBS -m ae
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=3:00:00
+#PBS -l mem=8GB
+#PBS -l vmem=8GB
+#PBS -j oe
+
+## The help message:
+function usage
+{
+    echo -e "usage:
+    qsub -s \"--conf conf_file --dir directory --mf master_file --lib lib_name --p2 pol2_annot \" master2region.pbs"
+}
+
+## Parse arguments from the command line
+while [ "$1" != "" ]; do
+    case $1 in
+        -s | --conf )         shift
+                                conf_file=$1
+                                ;;
+        -s | --dir )         shift
+                                directory=$1
+                                ;;
+        -s | --mf )         shift
+                                master_file=$1
+                                ;;
+        -s | --lib )           shift
+                                lib_name=$1
+                                ;;
+        -s | --p2 )           shift
+                                pol2_annot=$1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+# Load Python 
+
+module load python/3.6.6
+module load bedtools/2.27.0
+
+# Change directory
+
+cd ${PBS_O_WORKDIR}
+source ${conf_file}
+
+python ${miasig_dir}master2region.py ${directory} ${master_file} ${lib_name}
+
+cd ${directory}
+
+if [[ ${pol2_annot} != 'none' ]]; then
+   bedtools intersect -c -a ${lib_name}.region -b ${pol2_annot} | awk '{ if ($6 == 0) print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "E" ; else print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" "P" }' > ${lib_name}.region.PEanno
+fi
+
+

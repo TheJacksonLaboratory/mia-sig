@@ -1,0 +1,60 @@
+#!/bin/bash 
+# Set parameters for the cluster
+#PBS -m ae
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=3:00:00
+#PBS -l mem=8GB
+#PBS -l vmem=8GB
+#PBS -j oe
+
+## The help message:
+function usage
+{
+    echo -e "usage:
+    qsub -s \"--conf conf_file --dir directory --i in_file --lib lib_name\" region2subrds.pbs"
+}
+
+## Parse arguments from the command line
+while [ "$1" != "" ]; do
+    case $1 in
+        -s | --conf )         shift
+                                conf_file=$1
+                                ;;
+        -s | --dir )         shift
+                                directory=$1
+                                ;;
+        -s | --i )         shift
+                                in_file=$1
+                                ;;
+        -s | --lib )         shift
+                                lib_name=$1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+# Load modules
+module load R/3.4.1
+
+# Change directory
+
+cd ${PBS_O_WORKDIR}
+source ${conf_file}
+cd ${directory}
+
+mkdir ${lib_name}
+
+chromlist=$(cat ${in_file} | cut -f1 | sort | uniq)
+for chrom in ${chromlist}; 
+  do grep -w ${chrom} ${in_file} > ./${lib_name}/${chrom}.tsv; 
+  Rscript ${miasig_dir}tsv2subrds.R ${directory}${lib_name} ${chrom}.tsv ${chrom}.SUBRDS
+done
+
+
+

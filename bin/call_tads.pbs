@@ -1,0 +1,87 @@
+#!/bin/bash 
+# Set parameters for the cluster
+#PBS -m ae
+#PBS -M minji.kim@jax.org
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=1:00:00
+#PBS -l mem=16GB
+#PBS -l vmem=16GB
+#PBS -j oe
+
+## The help message:
+function usage
+{
+    echo -e "usage:
+    qsub -F \"--conf conf_file --dir directory --file file_name --cat category --bs binsize --sp species --r ref --chdir chrom_dir \" call_tads.pbs"
+}
+
+## Parse arguments from the command line
+while [ "$1" != "" ]; do
+    case $1 in
+        -s | --conf )         shift
+                                conf_file=$1
+                                ;;
+        -s | --dir )           shift
+                                directory=$1
+                                ;;
+        -s | --file )           shift
+                                file_name=$1
+                                ;;
+        -s | --cat )           shift
+                                category=$1
+                                ;;
+        -s | --bs )           shift
+                                binsize=$1
+                                ;;
+        -s | --sp )           shift
+                                species=$1
+                                ;;
+        -s | --r )           shift
+                                ref=$1
+                                ;;
+        -s | --chdir )           shift
+                                chrom_dir=$1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+# Load Python 
+
+module load python/3.6.6
+module load BEDtools/2.26.0
+
+# Change directory
+
+cd ${PBS_O_WORKDIR}
+source ${conf_file}
+
+python ${miasig_dir}master2subgemcov.py ${directory} ${file_name} ${category} ${species}
+
+out_bed=${directory}${file_name%_master.txt}'_'${category}'_subgem_cov_gem_wgt.bed'
+
+chrom_file=${chrom_dir}${ref}.chrom.sizes
+
+sort -k 1,1 ${out_bed} > ${out_bed%.bed}.sorted.bed
+bedtools genomecov -bg -i ${out_bed%.bed}.sorted.bed -g ${chrom_file} > ${out_bed%.bed}.bedgraph
+
+chrom_win=${chrom_dir}${ref}.${binsize}bp.windows.bed
+if [ ! -f "${chrom_win}" ]
+then
+    bedtools makewindows -g ${chrom_file} -w ${binsize} > ${chrom_win}
+fi
+    
+bedtools map -a ${chrom_win} -b ${out_bed%.bed}.bedgraph -c 4 -o median -null 0 > ${out_bed%.bed}.${binsize}'bp_binned.bedgraph'
+
+in_bedgraph=${file_name%_master.txt}'_'${category}'_subgem_cov_gem_wgt.'${binsize}'bp_binned.bedgraph'
+
+python ${miasig_dir}cov2tad.py ${directory} ${in_bedgraph} ${binsize} ${species} ${chrom_file}
+
+rm ${out_bed}
+
