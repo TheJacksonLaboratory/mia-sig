@@ -236,7 +236,7 @@ if __name__ == '__main__':
     #### Log file ####
     out = open(out_directory + prefix + "_distTest_logFile.txt", "a")
     
-    out.write("Software version: v0.1 (2019-04-26, Kim)" + "\n")
+    out.write("Software version: v0.2 (2019-10-08, Kim)" + "\n")
     out.write("Directory: " + directory + "\n")
     out.write("File name: " + file_name + "\n")
     out.write("Library name: " + library_name + "\n")
@@ -314,7 +314,10 @@ if __name__ == '__main__':
                 out_gems[indx[k]].append(round(adj_pval1[1][k], 4))
                 # Subcategories from first distance test #
                 if adj_pval1[0][k]==True:
-                    out_gems[indx[k]].extend(['PASS', '.', '.', '.'])
+                    if fn < 101: # GEMs with <= 100 fragments pass; 20191008
+                        out_gems[indx[k]].extend(['PASS', '.', '.', '.'])
+                    else: # GEMs with > 100 fragments fail; 20191008
+                        out_gems[indx[k]].extend(['FAIL', '.', '.', '.'])
                 elif adj_pval1[0][k]==False:
                     if fn==2: # GEMs with 2 fragments fail
                         out_gems[indx[k]].extend(['FAIL', '.', '.', '.'])

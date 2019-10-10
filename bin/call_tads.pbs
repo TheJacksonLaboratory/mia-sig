@@ -3,9 +3,9 @@
 #PBS -m ae
 #PBS -M minji.kim@jax.org
 #PBS -l nodes=1:ppn=4
-#PBS -l walltime=1:00:00
-#PBS -l mem=16GB
-#PBS -l vmem=16GB
+#PBS -l walltime=30:00:00
+#PBS -l mem=40GB
+#PBS -l vmem=40GB
 #PBS -j oe
 
 ## The help message:
