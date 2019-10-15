@@ -48,15 +48,27 @@ def plot_dist_byfrag(fragn, frags, category, fig_name):
     Plot neighboring fragment distance distribution categorized by fragment number.
     """
     maxfn = max(fragn)
+    minfn = min(fragn)
     if maxfn < 5:
         breakPoints = [range(2,max(fragn)+1)]
         legendLab = ['2-max']
     elif maxfn > 4 and maxfn < 10:
-        breakPoints = [range(2,5), range(5,maxfn+1)]
-        legendLab = ['2-4', '5-max']
+        if minfn < 5:
+            breakPoints = [range(2,5), range(5,maxfn+1)]
+            legendLab = ['2-4', '5-max']
+        else:
+            breakPoints = [range(5,maxfn+1)]
+            legendLab = ['5-max']
     else:
-        breakPoints = [range(2,5), range(5, 10), range(10,maxfn+1)]
-        legendLab = ['2-4', '5-9', '10-max']
+        if minfn < 5:
+            breakPoints = [range(2,5), range(5, 10), range(10,maxfn+1)]
+            legendLab = ['2-4', '5-9', '10-max']
+        elif minfn > 4 and minfn < 10:
+            breakPoints = [range(5, 10), range(10,maxfn+1)]
+            legendLab = ['5-9', '10-max']
+        else:
+            breakPoints = [range(10,maxfn+1)]
+            legendLab = ['10-max']
     fdistbyfnum = [[] for i in range(max(fragn)+1)] # distByFragNum[i] contains all distances for i fragments / GEM 
     fdist = []
     for i in range(len(frags)):

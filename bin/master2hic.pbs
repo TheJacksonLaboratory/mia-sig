@@ -1,10 +1,10 @@
 #!/bin/bash 
 # Set parameters for the cluster
 #PBS -m ae
-#PBS -l nodes=1:ppn=2
-#PBS -l walltime=72:00:00
-#PBS -l mem=24GB
-#PBS -l vmem=24GB
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=48:00:00
+#PBS -l mem=50GB
+#PBS -l vmem=50GB
 #PBS -j oe
 
 ## The help message:
