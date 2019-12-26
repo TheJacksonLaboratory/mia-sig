@@ -161,6 +161,12 @@ def get_raw_pval(obs_frags, obs_span, obs_fraglen, obs_f2f, sample_size, cov, bi
         for j in range(int(len(pseudo)/2)):
             exp.append(get_mean_cov(pseudo[2*j], pseudo[2*j+1], cov, bin_size))
         exp_enrich.append(sum(exp)/len(exp))
+    # write 1000 null (expected, sampled) values; 20191226
+    prefix_null = "_".join(prefix.split("_")[:-1]) + "_1000"
+    with open(out_directory + prefix_null + "_enrichTest_null.txt", "a") as f1:
+        f1.write(','.join(map(str, [round(x,1) for x in exp_enrich])) + '\n')
+    f1.close()
+    # compute raw p-value  
     raw_pval = sum(i > obs_enrich for i in exp_enrich)/sample_size
     return(raw_pval, obs_enrich)
 
@@ -212,7 +218,7 @@ if __name__ == '__main__':
     #### Log file ####
     out = open(out_directory + prefix + "_enrichTest_logFile.txt", "a")
     
-    out.write("Software version: v0.1 (2019-04-23, Kim)" + "\n")
+    out.write("Software version: v0.2 (2019-12-26, Kim)" + "\n")
     out.write("Input directory: " + directory + "\n")
     out.write("Input file name: " + file_name + "\n")
     out.write("Output directory: " + out_directory + "\n")
